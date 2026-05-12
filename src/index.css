@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sand: #F5E6C8;
+  --color-terracotta: #C4622D;
+  --color-dusty-rose: #D4A5A5;
+  --color-sage: #7D9B76;
+  --color-deep-purple: #3D2B56;
+  --color-warm-cream: #FDF6EC;
+  --color-gold: #D4A843;
+
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --sand: #F5E6C8;
+  --terracotta: #C4622D;
+  --dusty-rose: #D4A5A5;
+  --sage: #7D9B76;
+  --deep-purple: #3D2B56;
+  --warm-cream: #FDF6EC;
+  --gold: #D4A843;
+
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  color-scheme: light;
+  color: var(--deep-purple);
+  background-color: var(--warm-cream);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--deep-purple);
+
+  background-color: var(--warm-cream);
+  background-image:
+    radial-gradient(
+      ellipse at 20% 0%,
+      rgba(212, 165, 165, 0.35),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 80% 100%,
+      rgba(196, 98, 45, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(212, 168, 67, 0.12),
+      transparent 70%
+    ),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.24  0 0 0 0 0.17  0 0 0 0 0.34  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>");
+  background-attachment: fixed;
+  background-size: auto, auto, auto, 240px 240px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--deep-purple);
+  margin: 0 0 0.5em;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  line-height: 1.2;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--terracotta);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+a:hover {
+  color: var(--deep-purple);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
