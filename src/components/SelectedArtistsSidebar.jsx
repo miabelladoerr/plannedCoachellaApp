@@ -46,6 +46,7 @@ export default function SelectedArtistsSidebar({
   onRemove,
   onClear,
   onBuild,
+  showSaved = false,
 }) {
   const closeBtnRef = useRef(null);
   const groups = useMemo(
@@ -161,6 +162,14 @@ export default function SelectedArtistsSidebar({
 
         {totalCount > 0 && (
           <footer className="space-y-2 border-t border-warm-cream/15 px-6 py-4">
+            <p
+              aria-live="polite"
+              className={`-mb-0.5 text-center font-sans text-[0.65rem] font-bold uppercase tracking-[0.25em] text-gold transition-opacity duration-300 ${
+                showSaved ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              Saved ✓
+            </p>
             <button
               type="button"
               onClick={onBuild}

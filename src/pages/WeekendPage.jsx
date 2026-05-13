@@ -39,15 +39,107 @@ const WEEKEND_META = {
 
 const DAYS = ["Friday", "Saturday", "Sunday"];
 
+const storageKey = (weekend) =>
+  `plannedCoachella:selectedIds:weekend${weekend}`;
+
+function loadFromUrl(weekend) {
+  if (typeof window === "undefined") return null;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const dayRaw = params.get("day");
+    const artistsRaw = params.get("artists");
+    if (!dayRaw || !artistsRaw) return null;
+    const day =
+      dayRaw.charAt(0).toUpperCase() + dayRaw.slice(1).toLowerCase();
+    if (!DAYS.includes(day)) return null;
+    const names = new Set(
+      artistsRaw.split(",").map((n) => decodeURIComponent(n.trim())),
+    );
+    const ids = new Set();
+    const daySchedule = schedule[weekend]?.[day] ?? {};
+    for (const stage of STAGES) {
+      const sets = daySchedule[stage] ?? [];
+      for (const artist of sets) {
+        if (names.has(artist.name)) {
+          ids.add(artistKey(weekend, day, stage, artist));
+        }
+      }
+    }
+    return ids.size > 0 ? { ids, day } : null;
+  } catch {
+    return null;
+  }
+}
+
+function loadStoredIds(weekend) {
+  try {
+    const raw = localStorage.getItem(storageKey(weekend));
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) return new Set(arr);
+  } catch {
+    /* fall through */
+  }
+  return new Set();
+}
+
 export default function WeekendPage({ weekend }) {
   const meta = WEEKEND_META[weekend] ?? WEEKEND_META[1];
-  const [selectedDay, setSelectedDay] = useState(DAYS[0]);
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const urlBootRef = useRef(null);
+  if (urlBootRef.current === null) {
+    urlBootRef.current = loadFromUrl(weekend) ?? { ids: null, day: null };
+  }
+  const urlBoot = urlBootRef.current;
+  const [selectedDay, setSelectedDay] = useState(urlBoot.day ?? DAYS[0]);
+  const [selectedIds, setSelectedIds] = useState(
+    () => urlBoot.ids ?? loadStoredIds(weekend),
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scheduleBuilt, setScheduleBuilt] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showSaved, setShowSaved] = useState(false);
   const toastIdRef = useRef(0);
+  const isFirstSaveRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstSaveRender.current) {
+      isFirstSaveRender.current = false;
+      return;
+    }
+    try {
+      localStorage.setItem(
+        storageKey(weekend),
+        JSON.stringify([...selectedIds]),
+      );
+      setShowSaved(true);
+    } catch {
+      /* localStorage unavailable — silent fallthrough */
+    }
+  }, [selectedIds, weekend]);
+
+  useEffect(() => {
+    if (!showSaved) return;
+    const t = setTimeout(() => setShowSaved(false), 2000);
+    return () => clearTimeout(t);
+  }, [showSaved]);
+
+  useEffect(() => {
+    if (urlBoot.ids && urlBoot.ids.size > 0) {
+      setScheduleBuilt(true);
+      try {
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname + window.location.hash,
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+    // run once per mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selectedArtists = useMemo(() => {
     const out = [];
@@ -237,6 +329,7 @@ export default function WeekendPage({ weekend }) {
         onRemove={toggleArtist}
         onClear={clearAll}
         onBuild={buildSchedule}
+        showSaved={showSaved}
       />
 
       {toast && (

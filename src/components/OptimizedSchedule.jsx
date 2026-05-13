@@ -1,3 +1,40 @@
+import { useEffect, useState } from "react";
+
+function ShareIcon({ size = 16 }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+      <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
+    </svg>
+  );
+}
+
+function buildShareUrl(events) {
+  const firstDay = events.find((e) => e.type === "set")?.day;
+  if (!firstDay) return null;
+  const names = events
+    .filter((e) => e.type === "set" && e.day === firstDay)
+    .map((e) => e.name);
+  if (names.length === 0) return null;
+  const dayParam = encodeURIComponent(firstDay.toLowerCase());
+  const artistsParam = names.map(encodeURIComponent).join(",");
+  const { origin, pathname } = window.location;
+  return `${origin}${pathname}?day=${dayParam}&artists=${artistsParam}`;
+}
+
 const STAGE_ACCENT = {
   "Coachella Stage": { color: "#C4622D", tint: "rgba(196,98,45,0.12)" },
   "Outdoor Theatre": { color: "#7D9B76", tint: "rgba(125,155,118,0.12)" },
@@ -277,7 +314,29 @@ function groupByDay(events) {
 }
 
 export default function OptimizedSchedule({ events, tips = [] }) {
+  const [shareToast, setShareToast] = useState(null);
+
+  useEffect(() => {
+    if (!shareToast) return;
+    const t = setTimeout(() => setShareToast(null), 2500);
+    return () => clearTimeout(t);
+  }, [shareToast]);
+
   if (!events || events.length === 0) return null;
+
+  const handleShare = async () => {
+    const url = buildShareUrl(events);
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareToast({ kind: "success", message: "Link copied! 🔗" });
+    } catch {
+      setShareToast({
+        kind: "error",
+        message: "Couldn't copy — select the URL in the address bar to share.",
+      });
+    }
+  };
 
   const setCount = events.filter((e) => e.type === "set").length;
   const conflictCount = events.filter(
@@ -368,6 +427,27 @@ export default function OptimizedSchedule({ events, tips = [] }) {
           </div>
         ))}
       </div>
+
+      <div className="mt-10 flex justify-center">
+        <button
+          type="button"
+          onClick={handleShare}
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-deep-purple px-6 py-3 font-sans text-sm font-bold uppercase tracking-[0.2em] text-warm-cream shadow-sm ring-1 ring-gold/40 transition hover:-translate-y-0.5 hover:bg-deep-purple/95 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-warm-cream"
+        >
+          <ShareIcon />
+          <span>Share My Schedule</span>
+        </button>
+      </div>
+
+      {shareToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="animate-toast-in fixed bottom-6 left-6 right-6 z-50 max-w-sm rounded-2xl border-2 border-warm-cream bg-deep-purple px-5 py-4 font-sans text-sm text-warm-cream shadow-2xl shadow-deep-purple/50 sm:right-auto"
+        >
+          {shareToast.message}
+        </div>
+      )}
     </section>
   );
 }
