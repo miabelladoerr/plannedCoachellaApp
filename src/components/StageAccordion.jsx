@@ -1,5 +1,9 @@
 import { useId, useState } from "react";
 
+export function artistKey(weekend, day, stage, artist) {
+  return `w${weekend}|${day}|${stage}|${artist.name}|${artist.startTime}`;
+}
+
 function Chevron({ open }) {
   return (
     <svg
@@ -22,9 +26,30 @@ function Chevron({ open }) {
   );
 }
 
+function CheckMark() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      className="h-3.5 w-3.5 text-gold"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 10.5 L8.5 14.5 L16 6.5" />
+    </svg>
+  );
+}
+
 export default function StageAccordion({
   stage,
   artists = [],
+  weekend,
+  day,
+  selectedIds,
+  onToggleArtist,
   defaultOpen = false,
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -66,22 +91,46 @@ export default function StageAccordion({
       >
         {count > 0 ? (
           <ul className="divide-y divide-dusty-rose/30 border-t border-dusty-rose/30">
-            {artists.map((a) => (
-              <li
-                key={`${a.name}-${a.startTime}`}
-                className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-6 py-3"
-              >
-                <span className="font-sans font-semibold text-deep-purple">
-                  {a.name}
-                </span>
-                <span className="font-sans text-sm tabular-nums text-deep-purple/60">
-                  {a.startTime} – {a.endTime}
-                </span>
-                <span className="ml-auto rounded-full border border-dusty-rose/50 bg-dusty-rose/25 px-3 py-0.5 font-sans text-[0.7rem] uppercase tracking-[0.12em] text-deep-purple">
-                  {a.genre}
-                </span>
-              </li>
-            ))}
+            {artists.map((a) => {
+              const id = artistKey(weekend, day, stage, a);
+              const isSelected = selectedIds?.has(id) ?? false;
+              return (
+                <li key={id}>
+                  <label
+                    className={`flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-6 py-3 transition-colors ${
+                      isSelected ? "bg-gold/15" : "hover:bg-sand/40"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="peer sr-only"
+                      checked={isSelected}
+                      onChange={() => onToggleArtist?.(id, a)}
+                      aria-label={`Select ${a.name}, ${a.startTime} to ${a.endTime}`}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-gold/70 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-warm-cream ${
+                        isSelected
+                          ? "border-gold bg-gold/10"
+                          : "border-deep-purple/25 bg-warm-cream"
+                      }`}
+                    >
+                      {isSelected && <CheckMark />}
+                    </span>
+                    <span className="font-sans font-semibold text-deep-purple">
+                      {a.name}
+                    </span>
+                    <span className="font-sans text-sm tabular-nums text-deep-purple/60">
+                      {a.startTime} – {a.endTime}
+                    </span>
+                    <span className="ml-auto rounded-full border border-dusty-rose/50 bg-dusty-rose/25 px-3 py-0.5 font-sans text-[0.7rem] uppercase tracking-[0.12em] text-deep-purple">
+                      {a.genre}
+                    </span>
+                  </label>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="border-t border-dusty-rose/30 px-6 py-4 font-sans text-sm text-deep-purple/60">

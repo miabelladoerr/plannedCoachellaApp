@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import LiveStageDisplay from "../components/LiveStageDisplay.jsx";
 import StageAccordion from "../components/StageAccordion.jsx";
+import SelectionPill from "../components/SelectionPill.jsx";
+import SelectedArtistsSidebar from "../components/SelectedArtistsSidebar.jsx";
 import { STAGES, schedule } from "../data/schedule.js";
 
 const WEEKEND_META = {
@@ -13,6 +15,21 @@ const DAYS = ["Friday", "Saturday", "Sunday"];
 export default function WeekendPage({ weekend }) {
   const meta = WEEKEND_META[weekend] ?? WEEKEND_META[1];
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const toggleArtist = useCallback((id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearAll = useCallback(() => setSelectedIds(new Set()), []);
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   return (
     <section className="mx-auto w-full max-w-4xl px-6 py-16">
@@ -62,7 +79,7 @@ export default function WeekendPage({ weekend }) {
 
       <LiveStageDisplay weekend={weekend} day={selectedDay} />
 
-      <div className="mt-12">
+      <div id="schedule-section" className="mt-12 scroll-mt-24">
         <h3 className="mb-4 px-1 font-display text-2xl text-deep-purple">
           Full schedule by stage
         </h3>
@@ -71,11 +88,28 @@ export default function WeekendPage({ weekend }) {
             <StageAccordion
               key={stage}
               stage={stage}
+              weekend={weekend}
+              day={selectedDay}
+              selectedIds={selectedIds}
+              onToggleArtist={toggleArtist}
               artists={schedule[weekend]?.[selectedDay]?.[stage] ?? []}
             />
           ))}
         </div>
       </div>
+
+      {!drawerOpen && (
+        <SelectionPill count={selectedIds.size} onClick={openDrawer} />
+      )}
+
+      <SelectedArtistsSidebar
+        open={drawerOpen}
+        onClose={closeDrawer}
+        weekend={weekend}
+        selectedIds={selectedIds}
+        onRemove={toggleArtist}
+        onClear={clearAll}
+      />
     </section>
   );
 }
