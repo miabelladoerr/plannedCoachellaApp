@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import LiveStageDisplay from "../components/LiveStageDisplay.jsx";
-import StageAccordion, { artistKey } from "../components/StageAccordion.jsx";
+import StageAccordion from "../components/StageAccordion.jsx";
+import { artistKey } from "../utils/artistKey.js";
 import SelectionPill from "../components/SelectionPill.jsx";
 import SelectedArtistsSidebar from "../components/SelectedArtistsSidebar.jsx";
 import OptimizedSchedule from "../components/OptimizedSchedule.jsx";
@@ -85,48 +87,23 @@ function loadStoredIds(weekend) {
 
 export default function WeekendPage({ weekend }) {
   const meta = WEEKEND_META[weekend] ?? WEEKEND_META[1];
-  const urlBootRef = useRef(null);
-  if (urlBootRef.current === null) {
-    urlBootRef.current = loadFromUrl(weekend) ?? { ids: null, day: null };
-  }
-  const urlBoot = urlBootRef.current;
-  const [selectedDay, setSelectedDay] = useState(urlBoot.day ?? DAYS[0]);
+  const [selectedDay, setSelectedDay] = useState(
+    () => loadFromUrl(weekend)?.day ?? DAYS[0],
+  );
   const [selectedIds, setSelectedIds] = useState(
-    () => urlBoot.ids ?? loadStoredIds(weekend),
+    () => loadFromUrl(weekend)?.ids ?? loadStoredIds(weekend),
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [scheduleBuilt, setScheduleBuilt] = useState(false);
+  const [scheduleBuilt, setScheduleBuilt] = useState(
+    () => (loadFromUrl(weekend)?.ids?.size ?? 0) > 0,
+  );
   const [mapOpen, setMapOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [showSaved, setShowSaved] = useState(false);
   const toastIdRef = useRef(0);
-  const isFirstSaveRender = useRef(true);
 
   useEffect(() => {
-    if (isFirstSaveRender.current) {
-      isFirstSaveRender.current = false;
-      return;
-    }
-    try {
-      localStorage.setItem(
-        storageKey(weekend),
-        JSON.stringify([...selectedIds]),
-      );
-      setShowSaved(true);
-    } catch {
-      /* localStorage unavailable — silent fallthrough */
-    }
-  }, [selectedIds, weekend]);
-
-  useEffect(() => {
-    if (!showSaved) return;
-    const t = setTimeout(() => setShowSaved(false), 2000);
-    return () => clearTimeout(t);
-  }, [showSaved]);
-
-  useEffect(() => {
-    if (urlBoot.ids && urlBoot.ids.size > 0) {
-      setScheduleBuilt(true);
+    if (loadFromUrl(weekend)) {
       try {
         window.history.replaceState(
           {},
@@ -137,9 +114,31 @@ export default function WeekendPage({ weekend }) {
         /* ignore */
       }
     }
-    // run once per mount
+    // run once per mount — URL has been consumed by initializers above
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!showSaved) return;
+    const t = setTimeout(() => setShowSaved(false), 2000);
+    return () => clearTimeout(t);
+  }, [showSaved]);
+
+  const persistSelections = useCallback(
+    (next) => {
+      try {
+        localStorage.setItem(
+          storageKey(weekend),
+          JSON.stringify([...next]),
+        );
+        setShowSaved(true);
+      } catch {
+        /* localStorage unavailable */
+      }
+      if (next.size === 0) setScheduleBuilt(false);
+    },
+    [weekend],
+  );
 
   const selectedArtists = useMemo(() => {
     const out = [];
@@ -183,13 +182,12 @@ export default function WeekendPage({ weekend }) {
 
   const toggleArtist = useCallback(
     (id, artist) => {
-      const isAdding = !selectedIds.has(id);
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
-        return next;
-      });
+      const next = new Set(selectedIds);
+      const isAdding = !next.has(id);
+      if (isAdding) next.add(id);
+      else next.delete(id);
+      setSelectedIds(next);
+      persistSelections(next);
 
       if (isAdding && artist?.day) {
         const conflict = selectedArtists.find((other) =>
@@ -205,10 +203,14 @@ export default function WeekendPage({ weekend }) {
         }
       }
     },
-    [selectedIds, selectedArtists],
+    [selectedIds, selectedArtists, persistSelections],
   );
 
-  const clearAll = useCallback(() => setSelectedIds(new Set()), []);
+  const clearAll = useCallback(() => {
+    const empty = new Set();
+    setSelectedIds(empty);
+    persistSelections(empty);
+  }, [persistSelections]);
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const dismissToast = useCallback(() => setToast(null), []);
@@ -232,10 +234,6 @@ export default function WeekendPage({ weekend }) {
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }, []);
-
-  useEffect(() => {
-    if (selectedIds.size === 0) setScheduleBuilt(false);
-  }, [selectedIds]);
 
   return (
     <>
@@ -344,3 +342,7 @@ export default function WeekendPage({ weekend }) {
     </>
   );
 }
+
+WeekendPage.propTypes = {
+  weekend: PropTypes.oneOf([1, 2]).isRequired,
+};

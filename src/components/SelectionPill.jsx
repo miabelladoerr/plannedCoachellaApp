@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export default function SelectionPill({ count, onClick }) {
   if (count <= 0) return null;
 
@@ -25,3 +27,8 @@ export default function SelectionPill({ count, onClick }) {
     </div>
   );
 }
+
+SelectionPill.propTypes = {
+  count: PropTypes.number.isRequired,
+  onClick: PropTypes.func.isRequired,
+};

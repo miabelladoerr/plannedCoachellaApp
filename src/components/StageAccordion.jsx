@@ -1,8 +1,13 @@
 import { useId, useState } from "react";
+import PropTypes from "prop-types";
+import { artistKey } from "../utils/artistKey.js";
 
-export function artistKey(weekend, day, stage, artist) {
-  return `w${weekend}|${day}|${stage}|${artist.name}|${artist.startTime}`;
-}
+const artistShape = PropTypes.shape({
+  name: PropTypes.string.isRequired,
+  startTime: PropTypes.string.isRequired,
+  endTime: PropTypes.string.isRequired,
+  genre: PropTypes.string,
+});
 
 function Chevron({ open }) {
   return (
@@ -72,7 +77,7 @@ export default function StageAccordion({
             <span className="font-display text-2xl leading-tight text-deep-purple">
               {stage}
             </span>
-            <span className="font-sans text-xs uppercase tracking-[0.18em] text-deep-purple/50">
+            <span className="font-sans text-xs uppercase tracking-[0.18em] text-deep-purple/70">
               {count} {count === 1 ? "set" : "sets"}
             </span>
           </span>
@@ -126,11 +131,11 @@ export default function StageAccordion({
                       {a.name}
                     </span>
                     {isConflict && (
-                      <span className="rounded-full bg-orange-500 px-2 py-0.5 font-sans text-[0.65rem] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
+                      <span className="rounded-full bg-orange-700 px-2 py-0.5 font-sans text-[0.65rem] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
                         ⚠ Conflict
                       </span>
                     )}
-                    <span className="font-sans text-sm tabular-nums text-deep-purple/60">
+                    <span className="font-sans text-sm tabular-nums text-deep-purple/70">
                       {a.startTime} – {a.endTime}
                     </span>
                     <span className="ml-auto rounded-full border border-dusty-rose/50 bg-dusty-rose/25 px-3 py-0.5 font-sans text-[0.7rem] uppercase tracking-[0.12em] text-deep-purple">
@@ -142,7 +147,7 @@ export default function StageAccordion({
             })}
           </ul>
         ) : (
-          <p className="border-t border-dusty-rose/30 px-6 py-4 font-sans text-sm text-deep-purple/60">
+          <p className="border-t border-dusty-rose/30 px-6 py-4 font-sans text-sm text-deep-purple/70">
             No sets scheduled.
           </p>
         )}
@@ -150,3 +155,14 @@ export default function StageAccordion({
     </div>
   );
 }
+
+StageAccordion.propTypes = {
+  stage: PropTypes.string.isRequired,
+  artists: PropTypes.arrayOf(artistShape),
+  weekend: PropTypes.oneOf([1, 2]).isRequired,
+  day: PropTypes.oneOf(["Friday", "Saturday", "Sunday"]).isRequired,
+  selectedIds: PropTypes.instanceOf(Set),
+  conflictIds: PropTypes.instanceOf(Set),
+  onToggleArtist: PropTypes.func,
+  defaultOpen: PropTypes.bool,
+};

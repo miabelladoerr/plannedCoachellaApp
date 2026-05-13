@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
+import PropTypes from "prop-types";
 import { STAGES, schedule } from "../data/schedule.js";
 
 const VENUE_CENTER = [33.6823, -116.238];
@@ -35,7 +36,7 @@ function createStageIcon(stageName) {
   return L.divIcon({
     className: "stage-pin-icon",
     html: `
-      <div style="position:relative; width:120px; height:72px;">
+      <div role="img" aria-label="${stageName} stage" style="position:relative; width:120px; height:72px;">
         <div style="position:absolute; left:42px; top:0;">${PIN_SVG}</div>
         <div style="
           position:absolute; left:50%; top:46px; transform: translateX(-50%);
@@ -62,7 +63,7 @@ function createStageIcon(stageName) {
 const USER_ICON = L.divIcon({
   className: "user-loc-icon",
   html: `
-    <div style="position:relative; width:24px; height:24px;">
+    <div role="img" aria-label="Your current location" style="position:relative; width:24px; height:24px;">
       <div class="animate-user-loc-pulse" style="
         position:absolute; top:0; left:0; width:24px; height:24px;
         background: rgba(59,130,246,0.4);
@@ -226,7 +227,7 @@ export default function MapView({ weekend, day }) {
     <section className="mt-10" aria-label="Festival map">
       <header className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1">
         <h3 className="font-display text-2xl text-deep-purple">Festival map</h3>
-        <span className="font-sans text-xs uppercase tracking-[0.2em] text-deep-purple/50">
+        <span className="font-sans text-xs uppercase tracking-[0.2em] text-deep-purple/70">
           Empire Polo Club · Indio
         </span>
       </header>
@@ -251,6 +252,8 @@ export default function MapView({ weekend, day }) {
                 key={stage}
                 position={coords}
                 icon={stageIcons[stage]}
+                alt={`${stage} stage`}
+                title={stage}
               >
                 <Popup>
                   <div className="map-popup">
@@ -274,7 +277,12 @@ export default function MapView({ weekend, day }) {
             );
           })}
           {userPos && (
-            <Marker position={userPos} icon={USER_ICON} interactive={false} />
+            <Marker
+              position={userPos}
+              icon={USER_ICON}
+              interactive={false}
+              alt="Your current location"
+            />
           )}
         </MapContainer>
 
@@ -300,3 +308,8 @@ export default function MapView({ weekend, day }) {
     </section>
   );
 }
+
+MapView.propTypes = {
+  weekend: PropTypes.oneOf([1, 2]).isRequired,
+  day: PropTypes.oneOf(["Friday", "Saturday", "Sunday"]).isRequired,
+};

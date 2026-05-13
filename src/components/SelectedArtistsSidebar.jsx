@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { artistKey } from "./StageAccordion.jsx";
+import PropTypes from "prop-types";
+import { artistKey } from "../utils/artistKey.js";
 import { DAYS, STAGES, schedule } from "../data/schedule.js";
 
 function buildGroups(weekend, selectedIds) {
@@ -190,3 +191,14 @@ export default function SelectedArtistsSidebar({
     </>
   );
 }
+
+SelectedArtistsSidebar.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  weekend: PropTypes.oneOf([1, 2]).isRequired,
+  selectedIds: PropTypes.instanceOf(Set).isRequired,
+  onRemove: PropTypes.func.isRequired,
+  onClear: PropTypes.func.isRequired,
+  onBuild: PropTypes.func,
+  showSaved: PropTypes.bool,
+};

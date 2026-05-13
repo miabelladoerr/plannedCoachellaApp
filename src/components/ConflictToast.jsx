@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 
 export default function ConflictToast({ a, b, onDismiss }) {
   useEffect(() => {
@@ -26,3 +27,9 @@ export default function ConflictToast({ a, b, onDismiss }) {
     </div>
   );
 }
+
+ConflictToast.propTypes = {
+  a: PropTypes.string.isRequired,
+  b: PropTypes.string.isRequired,
+  onDismiss: PropTypes.func.isRequired,
+};

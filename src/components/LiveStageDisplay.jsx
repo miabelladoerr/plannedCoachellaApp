@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 import { STAGES, schedule } from "../data/schedule.js";
 
 function parseTimeToMinutes(timeStr) {
@@ -66,7 +67,7 @@ export default function LiveStageDisplay({ weekend, day }) {
         <h3 className="font-display text-2xl text-deep-purple">
           Live by stage
         </h3>
-        <span className="font-sans text-xs uppercase tracking-[0.2em] text-deep-purple/50">
+        <span className="font-sans text-xs uppercase tracking-[0.2em] text-deep-purple/80">
           {day}
         </span>
       </div>
@@ -87,6 +88,11 @@ export default function LiveStageDisplay({ weekend, day }) {
     </section>
   );
 }
+
+LiveStageDisplay.propTypes = {
+  weekend: PropTypes.oneOf([1, 2]).isRequired,
+  day: PropTypes.oneOf(["Friday", "Saturday", "Sunday"]).isRequired,
+};
 
 function StageCard({ stage, artist, isLive }) {
   return (
@@ -115,7 +121,7 @@ function StageCard({ stage, artist, isLive }) {
                 </span>
               </>
             ) : (
-              <span className="font-sans text-xs font-bold uppercase tracking-[0.25em] text-sage">
+              <span className="font-sans text-xs font-bold uppercase tracking-[0.25em] text-deep-purple/85">
                 Up next
               </span>
             )}
@@ -124,18 +130,29 @@ function StageCard({ stage, artist, isLive }) {
           <p className="mt-2 font-sans text-lg font-semibold text-deep-purple">
             {artist.name}
           </p>
-          <p className="font-sans text-sm text-deep-purple/70">
+          <p className="font-sans text-sm text-deep-purple/80">
             {artist.startTime} – {artist.endTime}
           </p>
-          <p className="mt-1 font-sans text-[0.7rem] uppercase tracking-[0.15em] text-deep-purple/55">
+          <p className="mt-1 font-sans text-[0.7rem] uppercase tracking-[0.15em] text-deep-purple/80">
             {artist.genre}
           </p>
         </>
       ) : (
-        <p className="mt-3 font-sans text-sm text-deep-purple/60">
+        <p className="mt-3 font-sans text-sm text-deep-purple/80">
           No more sets today.
         </p>
       )}
     </article>
   );
 }
+
+StageCard.propTypes = {
+  stage: PropTypes.string.isRequired,
+  artist: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    startTime: PropTypes.string.isRequired,
+    endTime: PropTypes.string.isRequired,
+    genre: PropTypes.string,
+  }),
+  isLive: PropTypes.bool,
+};

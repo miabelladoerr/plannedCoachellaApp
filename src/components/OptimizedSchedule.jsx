@@ -1,4 +1,16 @@
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+
+const eventShape = PropTypes.shape({
+  type: PropTypes.oneOf(["set", "walk", "break", "suggestion"]).isRequired,
+  day: PropTypes.string,
+});
+
+const tipShape = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  kind: PropTypes.string,
+  message: PropTypes.string.isRequired,
+});
 
 function ShareIcon({ size = 16 }) {
   return (
@@ -35,16 +47,22 @@ function buildShareUrl(events) {
   return `${origin}${pathname}?day=${dayParam}&artists=${artistsParam}`;
 }
 
+// `color` is the visual accent (border + marker). `textColor` is a darker
+// variant used for the stage label so it clears WCAG AA against the cream card.
 const STAGE_ACCENT = {
-  "Coachella Stage": { color: "#C4622D", tint: "rgba(196,98,45,0.12)" },
-  "Outdoor Theatre": { color: "#7D9B76", tint: "rgba(125,155,118,0.12)" },
-  Sahara: { color: "#D4A843", tint: "rgba(212,168,67,0.16)" },
-  Mojave: { color: "#3D2B56", tint: "rgba(61,43,86,0.10)" },
-  Gobi: { color: "#D4A5A5", tint: "rgba(212,165,165,0.20)" },
-  Sonora: { color: "#8B3F1F", tint: "rgba(139,63,31,0.12)" },
-  Yuma: { color: "#5B6B8C", tint: "rgba(91,107,140,0.12)" },
+  "Coachella Stage": { color: "#9D4A21", textColor: "#9D4A21", tint: "rgba(157,74,33,0.12)" },
+  "Outdoor Theatre": { color: "#7D9B76", textColor: "#3F5239", tint: "rgba(125,155,118,0.12)" },
+  Sahara: { color: "#D4A843", textColor: "#7A5C0F", tint: "rgba(212,168,67,0.16)" },
+  Mojave: { color: "#3D2B56", textColor: "#3D2B56", tint: "rgba(61,43,86,0.10)" },
+  Gobi: { color: "#D4A5A5", textColor: "#7B4747", tint: "rgba(212,165,165,0.20)" },
+  Sonora: { color: "#8B3F1F", textColor: "#8B3F1F", tint: "rgba(139,63,31,0.12)" },
+  Yuma: { color: "#5B6B8C", textColor: "#3F4A65", tint: "rgba(91,107,140,0.12)" },
 };
-const FALLBACK_ACCENT = { color: "#3D2B56", tint: "rgba(61,43,86,0.08)" };
+const FALLBACK_ACCENT = {
+  color: "#3D2B56",
+  textColor: "#3D2B56",
+  tint: "rgba(61,43,86,0.08)",
+};
 const stageAccent = (stage) => STAGE_ACCENT[stage] ?? FALLBACK_ACCENT;
 
 function WalkIcon({ size = 14 }) {
@@ -186,11 +204,11 @@ function SetRow({ event, index = 0 }) {
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <span
             className="font-sans text-[0.7rem] font-bold uppercase tracking-[0.22em]"
-            style={{ color: accent.color }}
+            style={{ color: accent.textColor }}
           >
             {event.stage}
           </span>
-          <span className="font-sans text-xs tabular-nums text-deep-purple/55">
+          <span className="font-sans text-xs tabular-nums text-deep-purple/70">
             {event.startTime} – {event.endTime}
           </span>
         </div>
@@ -254,7 +272,7 @@ function BreakRow({ event, index = 0 }) {
           <span className="font-sans text-[0.7rem] font-bold uppercase tracking-[0.2em] text-terracotta">
             {isFood ? "Food + reset" : "Quick break"}
           </span>
-          <span className="tabular-nums text-deep-purple/60">
+          <span className="tabular-nums text-deep-purple/70">
             {event.startTime} – {event.endTime} · {event.durationMinutes} min
           </span>
         </p>
@@ -451,3 +469,8 @@ export default function OptimizedSchedule({ events, tips = [] }) {
     </section>
   );
 }
+
+OptimizedSchedule.propTypes = {
+  events: PropTypes.arrayOf(eventShape).isRequired,
+  tips: PropTypes.arrayOf(tipShape),
+};

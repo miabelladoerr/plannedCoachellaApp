@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 
 function DesertScene() {
   return (
@@ -136,3 +137,9 @@ export default function HeroBanner({ weekend, label, dates }) {
     </section>
   );
 }
+
+HeroBanner.propTypes = {
+  weekend: PropTypes.oneOf([1, 2]).isRequired,
+  label: PropTypes.string.isRequired,
+  dates: PropTypes.string.isRequired,
+};
