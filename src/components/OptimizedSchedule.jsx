@@ -129,10 +129,13 @@ function Marker({ children, color, textColor = "#FDF6EC" }) {
   );
 }
 
-function SetRow({ event }) {
+function SetRow({ event, index = 0 }) {
   const accent = stageAccent(event.stage);
   return (
-    <li className="relative pl-14">
+    <li
+      className="animate-fade-up relative pl-14"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <Marker color={accent.color}>
         <MusicIcon size={12} />
       </Marker>
@@ -174,9 +177,12 @@ function SetRow({ event }) {
   );
 }
 
-function WalkRow({ event }) {
+function WalkRow({ event, index = 0 }) {
   return (
-    <li className="relative pl-14">
+    <li
+      className="animate-fade-up relative pl-14"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <Marker color="rgba(125,155,118,0.85)" textColor="#FDF6EC">
         <WalkIcon size={12} />
       </Marker>
@@ -196,10 +202,13 @@ function WalkRow({ event }) {
   );
 }
 
-function BreakRow({ event }) {
+function BreakRow({ event, index = 0 }) {
   const isFood = event.kind === "food";
   return (
-    <li className="relative pl-14">
+    <li
+      className="animate-fade-up relative pl-14"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <Marker color="#C4622D">
         {isFood ? <ForkKnifeIcon size={12} /> : <MugIcon size={12} />}
       </Marker>
@@ -218,9 +227,12 @@ function BreakRow({ event }) {
   );
 }
 
-function SuggestionRow({ event }) {
+function SuggestionRow({ event, index = 0 }) {
   return (
-    <li className="relative pl-14">
+    <li
+      className="animate-fade-up relative pl-14"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <Marker color="#D4A843" textColor="#3D2B56">
         <BulbIcon size={12} />
       </Marker>
@@ -236,16 +248,16 @@ function SuggestionRow({ event }) {
   );
 }
 
-function EventRow({ event }) {
+function EventRow({ event, index }) {
   switch (event.type) {
     case "set":
-      return <SetRow event={event} />;
+      return <SetRow event={event} index={index} />;
     case "walk":
-      return <WalkRow event={event} />;
+      return <WalkRow event={event} index={index} />;
     case "break":
-      return <BreakRow event={event} />;
+      return <BreakRow event={event} index={index} />;
     case "suggestion":
-      return <SuggestionRow event={event} />;
+      return <SuggestionRow event={event} index={index} />;
     default:
       return null;
   }
@@ -253,12 +265,13 @@ function EventRow({ event }) {
 
 function groupByDay(events) {
   const days = [];
+  let cursor = 0;
   for (const ev of events) {
     const d = ev.day ?? "Schedule";
     if (!days.length || days.at(-1).day !== d) {
       days.push({ day: d, events: [] });
     }
-    days.at(-1).events.push(ev);
+    days.at(-1).events.push({ event: ev, index: cursor++ });
   }
   return days;
 }
@@ -321,8 +334,12 @@ export default function OptimizedSchedule({ events }) {
                 aria-hidden="true"
                 className="absolute left-6 top-2 bottom-2 w-px bg-sage/35"
               />
-              {dayEvents.map((event, i) => (
-                <EventRow key={`${event.type}-${i}`} event={event} />
+              {dayEvents.map(({ event, index }) => (
+                <EventRow
+                  key={`${event.type}-${index}`}
+                  event={event}
+                  index={index}
+                />
               ))}
             </ol>
           </div>

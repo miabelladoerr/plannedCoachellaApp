@@ -84,14 +84,14 @@ export default function SelectedArtistsSidebar({
         aria-modal="true"
         aria-label="Selected artists"
         aria-hidden={!open}
-        className={`fixed z-50 flex flex-col bg-deep-purple text-warm-cream shadow-2xl shadow-deep-purple/40 ring-1 ring-gold/20 transition-transform duration-300 ease-out inset-x-0 bottom-0 max-h-[82vh] rounded-t-3xl sm:inset-y-0 sm:left-auto sm:right-0 sm:bottom-auto sm:max-h-none sm:w-[380px] sm:rounded-t-none sm:rounded-l-3xl ${
+        className={`fixed z-50 flex flex-col bg-deep-purple text-warm-cream shadow-2xl shadow-deep-purple/40 ring-1 ring-gold/20 transition-transform duration-300 ease-out inset-x-0 bottom-0 max-h-[85vh] rounded-t-3xl md:inset-y-0 md:left-auto md:right-0 md:bottom-auto md:max-h-none md:w-[380px] md:rounded-t-none md:rounded-l-3xl ${
           open
-            ? "translate-y-0 sm:translate-x-0"
-            : "translate-y-full sm:translate-y-0 sm:translate-x-full"
+            ? "translate-y-0 md:translate-x-0"
+            : "translate-y-full md:translate-y-0 md:translate-x-full"
         }`}
       >
         <div
-          className="mx-auto mt-2 h-1 w-12 shrink-0 rounded-full bg-warm-cream/25 sm:hidden"
+          className="mx-auto mt-2 h-1 w-12 shrink-0 rounded-full bg-warm-cream/25 md:hidden"
           aria-hidden="true"
         />
 
@@ -109,7 +109,7 @@ export default function SelectedArtistsSidebar({
             type="button"
             onClick={onClose}
             aria-label="Close selections"
-            className="grid h-9 w-9 place-items-center rounded-full text-warm-cream/80 transition-colors hover:bg-warm-cream/10 hover:text-warm-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            className="grid h-11 w-11 place-items-center rounded-full text-warm-cream/80 transition-colors hover:bg-warm-cream/10 hover:text-warm-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
           >
             <CloseIcon />
           </button>
@@ -146,7 +146,7 @@ export default function SelectedArtistsSidebar({
                           type="button"
                           onClick={() => onRemove(row.id)}
                           aria-label={`Remove ${row.name}`}
-                          className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-warm-cream/60 transition-colors hover:bg-warm-cream/10 hover:text-warm-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-warm-cream/60 transition-colors hover:bg-warm-cream/10 hover:text-warm-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                         >
                           <CloseIcon size={14} />
                         </button>
@@ -164,14 +164,14 @@ export default function SelectedArtistsSidebar({
             <button
               type="button"
               onClick={onBuild}
-              className="w-full rounded-full bg-warm-cream px-4 py-2.5 font-sans text-sm font-bold uppercase tracking-[0.2em] text-deep-purple shadow-sm transition hover:-translate-y-0.5 hover:bg-warm-cream/95 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-deep-purple"
+              className="min-h-[44px] w-full rounded-full bg-warm-cream px-4 py-3 font-sans text-sm font-bold uppercase tracking-[0.2em] text-deep-purple shadow-sm transition hover:-translate-y-0.5 hover:bg-warm-cream/95 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-deep-purple"
             >
               Build My Schedule ↓
             </button>
             <button
               type="button"
               onClick={onClear}
-              className="w-full rounded-full border border-warm-cream/30 px-4 py-2 font-sans text-sm uppercase tracking-[0.2em] text-warm-cream transition-colors hover:bg-warm-cream/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              className="min-h-[44px] w-full rounded-full border border-warm-cream/30 px-4 py-3 font-sans text-sm uppercase tracking-[0.2em] text-warm-cream transition-colors hover:bg-warm-cream/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
             >
               Clear All
             </button>

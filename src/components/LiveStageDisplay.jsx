@@ -62,7 +62,7 @@ export default function LiveStageDisplay({ weekend, day }) {
 
   return (
     <section className="mt-10" aria-label={`Live stages for ${day}`}>
-      <div className="mb-4 flex items-baseline justify-between px-1">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1">
         <h3 className="font-display text-2xl text-deep-purple">
           Live by stage
         </h3>
@@ -72,7 +72,7 @@ export default function LiveStageDisplay({ weekend, day }) {
       </div>
 
       <div
-        className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4"
+        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6"
         role="list"
       >
         {cards.map(({ stage, artist, isLive }) => (

@@ -224,14 +224,14 @@ export default function MapView({ weekend, day }) {
 
   return (
     <section className="mt-10" aria-label="Festival map">
-      <header className="mb-3 flex items-baseline justify-between px-1">
+      <header className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1">
         <h3 className="font-display text-2xl text-deep-purple">Festival map</h3>
         <span className="font-sans text-xs uppercase tracking-[0.2em] text-deep-purple/50">
           Empire Polo Club · Indio
         </span>
       </header>
 
-      <div className="relative h-[420px] overflow-hidden rounded-2xl border-2 border-gold/40 shadow-sm">
+      <div className="relative h-[250px] overflow-hidden rounded-2xl border-2 border-gold/40 shadow-sm md:h-[420px]">
         <MapContainer
           ref={mapRef}
           center={VENUE_CENTER}
@@ -283,7 +283,7 @@ export default function MapView({ weekend, day }) {
           onClick={handleLocate}
           disabled={locating}
           aria-label="Show my location"
-          className="absolute right-3 top-3 z-[1000] grid h-10 w-10 place-items-center rounded-full border border-dusty-rose/40 bg-warm-cream text-deep-purple shadow-md transition hover:bg-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:cursor-not-allowed disabled:opacity-60"
+          className="absolute right-3 top-3 z-[1000] grid h-11 w-11 place-items-center rounded-full border border-dusty-rose/40 bg-warm-cream text-deep-purple shadow-md transition hover:bg-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:cursor-not-allowed disabled:opacity-60"
         >
           {locating ? <SpinnerIcon /> : <CrosshairIcon />}
         </button>

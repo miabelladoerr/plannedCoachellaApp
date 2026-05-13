@@ -5,6 +5,7 @@ import SelectionPill from "../components/SelectionPill.jsx";
 import SelectedArtistsSidebar from "../components/SelectedArtistsSidebar.jsx";
 import OptimizedSchedule from "../components/OptimizedSchedule.jsx";
 import MapView from "../components/MapView.jsx";
+import HeroBanner from "../components/HeroBanner.jsx";
 import { optimizeSchedule } from "../utils/scheduleOptimizer.js";
 import { STAGES, schedule } from "../data/schedule.js";
 
@@ -73,29 +74,13 @@ export default function WeekendPage({ weekend }) {
   }, [selectedIds]);
 
   return (
-    <section className="mx-auto w-full max-w-4xl px-6 py-16">
-      <header className="text-center">
-        <p className="font-sans text-xs uppercase tracking-[0.3em] text-terracotta">
-          Coachella · Weekend {weekend}
-        </p>
-        <h1 className="mt-3 font-display text-5xl text-deep-purple sm:text-6xl">
-          {meta.label} <span className="text-terracotta">—</span> {meta.dates}
-        </h1>
-
-        <div
-          className="mx-auto mt-6 flex max-w-xs items-center gap-3"
-          aria-hidden="true"
-        >
-          <span className="h-px flex-1 bg-gradient-to-r from-transparent via-dusty-rose to-transparent" />
-          <span className="text-gold">✦</span>
-          <span className="h-px flex-1 bg-gradient-to-r from-transparent via-dusty-rose to-transparent" />
-        </div>
-      </header>
-
+    <>
+      <HeroBanner weekend={weekend} label={meta.label} dates={meta.dates} />
+      <section className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
       <div
         role="tablist"
         aria-label="Select day"
-        className="mt-10 flex flex-wrap justify-center gap-3"
+        className="flex flex-wrap justify-center gap-3"
       >
         {DAYS.map((day) => {
           const isSelected = selectedDay === day;
@@ -106,7 +91,7 @@ export default function WeekendPage({ weekend }) {
               role="tab"
               aria-selected={isSelected}
               onClick={() => setSelectedDay(day)}
-              className={`rounded-full px-7 py-2.5 font-sans text-sm uppercase tracking-[0.18em] shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-warm-cream ${
+              className={`min-h-[44px] rounded-full px-5 py-3 font-sans text-sm uppercase tracking-[0.18em] shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-warm-cream sm:px-7 ${
                 isSelected
                   ? "bg-gold text-deep-purple shadow-md ring-2 ring-gold/40"
                   : "bg-terracotta text-warm-cream hover:bg-terracotta/90 hover:-translate-y-0.5"
@@ -126,7 +111,7 @@ export default function WeekendPage({ weekend }) {
           onClick={() => setMapOpen((o) => !o)}
           aria-expanded={mapOpen}
           aria-controls="map-region"
-          className="group inline-flex items-center gap-2 rounded-full border-2 border-dusty-rose/60 bg-warm-cream/80 px-5 py-2 font-sans text-sm font-semibold uppercase tracking-[0.18em] text-deep-purple shadow-sm transition hover:-translate-y-0.5 hover:border-terracotta hover:bg-sand/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-warm-cream"
+          className="group inline-flex min-h-[44px] items-center gap-2 rounded-full border-2 border-dusty-rose/60 bg-warm-cream/80 px-5 py-2.5 font-sans text-sm font-semibold uppercase tracking-[0.18em] text-deep-purple shadow-sm transition hover:-translate-y-0.5 hover:border-terracotta hover:bg-sand/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-warm-cream"
         >
           <span aria-hidden="true" className="text-base">
             📍
@@ -144,16 +129,21 @@ export default function WeekendPage({ weekend }) {
           Full schedule by stage
         </h3>
         <div className="flex flex-col gap-6">
-          {STAGES.map((stage) => (
-            <StageAccordion
+          {STAGES.map((stage, index) => (
+            <div
               key={stage}
-              stage={stage}
-              weekend={weekend}
-              day={selectedDay}
-              selectedIds={selectedIds}
-              onToggleArtist={toggleArtist}
-              artists={schedule[weekend]?.[selectedDay]?.[stage] ?? []}
-            />
+              className="animate-slide-in-left"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <StageAccordion
+                stage={stage}
+                weekend={weekend}
+                day={selectedDay}
+                selectedIds={selectedIds}
+                onToggleArtist={toggleArtist}
+                artists={schedule[weekend]?.[selectedDay]?.[stage] ?? []}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -175,6 +165,7 @@ export default function WeekendPage({ weekend }) {
         onClear={clearAll}
         onBuild={buildSchedule}
       />
-    </section>
+      </section>
+    </>
   );
 }
