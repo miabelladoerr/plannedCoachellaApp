@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import LiveStageDisplay from "../components/LiveStageDisplay.jsx";
-import StageAccordion from "../components/StageAccordion.jsx";
+import StageAccordion, { artistKey } from "../components/StageAccordion.jsx";
 import SelectionPill from "../components/SelectionPill.jsx";
 import SelectedArtistsSidebar from "../components/SelectedArtistsSidebar.jsx";
+import OptimizedSchedule from "../components/OptimizedSchedule.jsx";
+import { optimizeSchedule } from "../utils/scheduleOptimizer.js";
 import { STAGES, schedule } from "../data/schedule.js";
 
 const WEEKEND_META = {
@@ -17,6 +19,7 @@ export default function WeekendPage({ weekend }) {
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [scheduleBuilt, setScheduleBuilt] = useState(false);
 
   const toggleArtist = useCallback((id) => {
     setSelectedIds((prev) => {
@@ -30,6 +33,42 @@ export default function WeekendPage({ weekend }) {
   const clearAll = useCallback(() => setSelectedIds(new Set()), []);
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
+  const selectedArtists = useMemo(() => {
+    const out = [];
+    const weekendData = schedule[weekend] ?? {};
+    for (const day of DAYS) {
+      for (const stage of STAGES) {
+        const sets = weekendData[day]?.[stage] ?? [];
+        for (const artist of sets) {
+          const id = artistKey(weekend, day, stage, artist);
+          if (selectedIds.has(id)) {
+            out.push({ ...artist, day, stage, id });
+          }
+        }
+      }
+    }
+    return out;
+  }, [weekend, selectedIds]);
+
+  const scheduleEvents = useMemo(
+    () => optimizeSchedule(selectedArtists),
+    [selectedArtists],
+  );
+
+  const buildSchedule = useCallback(() => {
+    setScheduleBuilt(true);
+    setDrawerOpen(false);
+    requestAnimationFrame(() => {
+      document
+        .getElementById("optimized-schedule")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedIds.size === 0) setScheduleBuilt(false);
+  }, [selectedIds]);
 
   return (
     <section className="mx-auto w-full max-w-4xl px-6 py-16">
@@ -98,6 +137,10 @@ export default function WeekendPage({ weekend }) {
         </div>
       </div>
 
+      {scheduleBuilt && selectedArtists.length > 0 && (
+        <OptimizedSchedule events={scheduleEvents} />
+      )}
+
       {!drawerOpen && (
         <SelectionPill count={selectedIds.size} onClick={openDrawer} />
       )}
@@ -109,6 +152,7 @@ export default function WeekendPage({ weekend }) {
         selectedIds={selectedIds}
         onRemove={toggleArtist}
         onClear={clearAll}
+        onBuild={buildSchedule}
       />
     </section>
   );

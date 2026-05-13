@@ -45,6 +45,7 @@ export default function SelectedArtistsSidebar({
   selectedIds,
   onRemove,
   onClear,
+  onBuild,
 }) {
   const closeBtnRef = useRef(null);
   const groups = useMemo(
@@ -159,7 +160,14 @@ export default function SelectedArtistsSidebar({
         </div>
 
         {totalCount > 0 && (
-          <footer className="border-t border-warm-cream/15 px-6 py-4">
+          <footer className="space-y-2 border-t border-warm-cream/15 px-6 py-4">
+            <button
+              type="button"
+              onClick={onBuild}
+              className="w-full rounded-full bg-warm-cream px-4 py-2.5 font-sans text-sm font-bold uppercase tracking-[0.2em] text-deep-purple shadow-sm transition hover:-translate-y-0.5 hover:bg-warm-cream/95 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-deep-purple"
+            >
+              Build My Schedule ↓
+            </button>
             <button
               type="button"
               onClick={onClear}
