@@ -4,6 +4,7 @@ import StageAccordion, { artistKey } from "../components/StageAccordion.jsx";
 import SelectionPill from "../components/SelectionPill.jsx";
 import SelectedArtistsSidebar from "../components/SelectedArtistsSidebar.jsx";
 import OptimizedSchedule from "../components/OptimizedSchedule.jsx";
+import MapView from "../components/MapView.jsx";
 import { optimizeSchedule } from "../utils/scheduleOptimizer.js";
 import { STAGES, schedule } from "../data/schedule.js";
 
@@ -20,6 +21,7 @@ export default function WeekendPage({ weekend }) {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scheduleBuilt, setScheduleBuilt] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
 
   const toggleArtist = useCallback((id) => {
     setSelectedIds((prev) => {
@@ -117,6 +119,25 @@ export default function WeekendPage({ weekend }) {
       </div>
 
       <LiveStageDisplay weekend={weekend} day={selectedDay} />
+
+      <div className="mt-10 flex justify-center">
+        <button
+          type="button"
+          onClick={() => setMapOpen((o) => !o)}
+          aria-expanded={mapOpen}
+          aria-controls="map-region"
+          className="group inline-flex items-center gap-2 rounded-full border-2 border-dusty-rose/60 bg-warm-cream/80 px-5 py-2 font-sans text-sm font-semibold uppercase tracking-[0.18em] text-deep-purple shadow-sm transition hover:-translate-y-0.5 hover:border-terracotta hover:bg-sand/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-warm-cream"
+        >
+          <span aria-hidden="true" className="text-base">
+            📍
+          </span>
+          <span>{mapOpen ? "Hide Map" : "Show Map"}</span>
+        </button>
+      </div>
+
+      <div id="map-region">
+        {mapOpen && <MapView weekend={weekend} day={selectedDay} />}
+      </div>
 
       <div id="schedule-section" className="mt-12 scroll-mt-24">
         <h3 className="mb-4 px-1 font-display text-2xl text-deep-purple">
