@@ -1,5 +1,7 @@
 import { useState } from "react";
 import LiveStageDisplay from "../components/LiveStageDisplay.jsx";
+import StageAccordion from "../components/StageAccordion.jsx";
+import { STAGES, schedule } from "../data/schedule.js";
 
 const WEEKEND_META = {
   1: { label: "Weekend One", dates: "April 11–13" },
@@ -59,6 +61,21 @@ export default function WeekendPage({ weekend }) {
       </div>
 
       <LiveStageDisplay weekend={weekend} day={selectedDay} />
+
+      <div className="mt-12">
+        <h3 className="mb-4 px-1 font-display text-2xl text-deep-purple">
+          Full schedule by stage
+        </h3>
+        <div className="flex flex-col gap-6">
+          {STAGES.map((stage) => (
+            <StageAccordion
+              key={stage}
+              stage={stage}
+              artists={schedule[weekend]?.[selectedDay]?.[stage] ?? []}
+            />
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
