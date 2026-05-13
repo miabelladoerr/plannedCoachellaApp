@@ -206,6 +206,103 @@ function buildDayEvents(sets, day) {
   return events;
 }
 
+const STAGE_FOOD_SPOTS = {
+  "Coachella Stage": "the Main Lawn food trucks",
+  "Outdoor Theatre": "Terrace Bistro",
+  Sahara: "Spectra Food Court",
+  Mojave: "the Craft Beer Barn",
+  Gobi: "the Rose Garden food village",
+  Sonora: "the Indio Eats stand",
+  Yuma: "Heineken House",
+};
+
+const CROWDED_STAGES = {
+  Sahara: "headlining sets",
+  Yuma: "electronic acts",
+};
+
+export function generateTips(events) {
+  if (!Array.isArray(events) || events.length === 0) return [];
+  const tips = [];
+
+  // Tip 1: long gap → food/break tip
+  let currentStage = null;
+  let lastSet = null;
+  for (const ev of events) {
+    if (ev.type === "set") {
+      currentStage = ev.stage;
+      lastSet = ev;
+    } else if (ev.type === "walk") {
+      currentStage = ev.toStage;
+    } else if (
+      ev.type === "break" &&
+      ev.durationMinutes >= 30 &&
+      lastSet &&
+      currentStage
+    ) {
+      const spot = STAGE_FOOD_SPOTS[currentStage] ?? "a nearby food stand";
+      tips.push({
+        id: "food-gap",
+        kind: "food",
+        message: `You have a ${ev.durationMinutes}-minute gap after ${lastSet.name} — great time to grab food at ${spot} near the ${currentStage} tent.`,
+      });
+      break;
+    }
+  }
+
+  // Tip 2: late-night act at a crowded stage → arrive early
+  for (const ev of events) {
+    if (ev.type !== "set") continue;
+    const desc = CROWDED_STAGES[ev.stage];
+    if (!desc) continue;
+    if (ev.startMinutes < 22 * 60) continue; // 10 PM cutoff
+    tips.push({
+      id: "crowded-stage",
+      kind: "stage-tip",
+      message: `${ev.stage} gets packed for ${desc} — arrive 15 min early for ${ev.name}.`,
+    });
+    break;
+  }
+
+  // Tip 3: lots of grounds crossings → locker recommendation
+  const walks = events.filter((e) => e.type === "walk");
+  if (walks.length >= 4) {
+    tips.push({
+      id: "locker",
+      kind: "logistics",
+      message: `You're crossing the grounds ${walks.length} times — consider renting a locker near the Coachella Stage to drop gear.`,
+    });
+  }
+
+  // Tip 4 (fallback if room): multiple tight transitions
+  if (tips.length < 3) {
+    const tightCount = walks.filter((w) => w.tight).length;
+    if (tightCount >= 2) {
+      tips.push({
+        id: "tight-routes",
+        kind: "pacing",
+        message: `You've got ${tightCount} tight transitions — scope out the fastest routes between stages before doors.`,
+      });
+    }
+  }
+
+  // Tip 5 (fallback if room): unresolved overlap
+  if (tips.length < 3) {
+    const conflictSet = events.find(
+      (e) => e.type === "set" && e.conflict && e.conflictsWith?.length,
+    );
+    if (conflictSet) {
+      tips.push({
+        id: "pick-one",
+        kind: "conflict",
+        message: `${conflictSet.name} overlaps with ${conflictSet.conflictsWith.join(" and ")} — you'll have to pick one to commit to.`,
+      });
+    }
+  }
+
+  return tips.slice(0, 3);
+}
+
 export function optimizeSchedule(artists) {
   if (!Array.isArray(artists) || artists.length === 0) return [];
 

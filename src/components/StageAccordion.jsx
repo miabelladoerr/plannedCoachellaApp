@@ -49,6 +49,7 @@ export default function StageAccordion({
   weekend,
   day,
   selectedIds,
+  conflictIds,
   onToggleArtist,
   defaultOpen = false,
 }) {
@@ -94,6 +95,7 @@ export default function StageAccordion({
             {artists.map((a) => {
               const id = artistKey(weekend, day, stage, a);
               const isSelected = selectedIds?.has(id) ?? false;
+              const isConflict = conflictIds?.has(id) ?? false;
               return (
                 <li key={id}>
                   <label
@@ -105,7 +107,9 @@ export default function StageAccordion({
                       type="checkbox"
                       className="peer sr-only"
                       checked={isSelected}
-                      onChange={() => onToggleArtist?.(id, a)}
+                      onChange={() =>
+                        onToggleArtist?.(id, { ...a, day, stage })
+                      }
                       aria-label={`Select ${a.name}, ${a.startTime} to ${a.endTime}`}
                     />
                     <span
@@ -121,6 +125,11 @@ export default function StageAccordion({
                     <span className="font-sans font-semibold text-deep-purple">
                       {a.name}
                     </span>
+                    {isConflict && (
+                      <span className="rounded-full bg-orange-500 px-2 py-0.5 font-sans text-[0.65rem] font-bold uppercase tracking-[0.1em] text-white shadow-sm">
+                        ⚠ Conflict
+                      </span>
+                    )}
                     <span className="font-sans text-sm tabular-nums text-deep-purple/60">
                       {a.startTime} – {a.endTime}
                     </span>

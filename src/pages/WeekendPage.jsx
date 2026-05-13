@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LiveStageDisplay from "../components/LiveStageDisplay.jsx";
 import StageAccordion, { artistKey } from "../components/StageAccordion.jsx";
 import SelectionPill from "../components/SelectionPill.jsx";
@@ -6,8 +6,31 @@ import SelectedArtistsSidebar from "../components/SelectedArtistsSidebar.jsx";
 import OptimizedSchedule from "../components/OptimizedSchedule.jsx";
 import MapView from "../components/MapView.jsx";
 import HeroBanner from "../components/HeroBanner.jsx";
-import { optimizeSchedule } from "../utils/scheduleOptimizer.js";
+import ConflictToast from "../components/ConflictToast.jsx";
+import {
+  generateTips,
+  optimizeSchedule,
+} from "../utils/scheduleOptimizer.js";
 import { STAGES, schedule } from "../data/schedule.js";
+
+function toMin(t) {
+  const [time, mer] = t.split(" ");
+  const [h, m] = time.split(":").map(Number);
+  let hour = h % 12;
+  if (mer === "PM") hour += 12;
+  return hour * 60 + m;
+}
+
+function artistsOverlap(a, b) {
+  if (a.day !== b.day) return false;
+  const aStart = toMin(a.startTime);
+  let aEnd = toMin(a.endTime);
+  if (aEnd <= aStart) aEnd += 1440;
+  const bStart = toMin(b.startTime);
+  let bEnd = toMin(b.endTime);
+  if (bEnd <= bStart) bEnd += 1440;
+  return aEnd > bStart && bEnd > aStart;
+}
 
 const WEEKEND_META = {
   1: { label: "Weekend One", dates: "April 11–13" },
@@ -23,19 +46,8 @@ export default function WeekendPage({ weekend }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scheduleBuilt, setScheduleBuilt] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
-
-  const toggleArtist = useCallback((id) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const clearAll = useCallback(() => setSelectedIds(new Set()), []);
-  const openDrawer = useCallback(() => setDrawerOpen(true), []);
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const [toast, setToast] = useState(null);
+  const toastIdRef = useRef(0);
 
   const selectedArtists = useMemo(() => {
     const out = [];
@@ -54,9 +66,69 @@ export default function WeekendPage({ weekend }) {
     return out;
   }, [weekend, selectedIds]);
 
+  const conflictIds = useMemo(() => {
+    const result = new Set();
+    if (selectedArtists.length === 0) return result;
+    const weekendData = schedule[weekend] ?? {};
+    for (const day of DAYS) {
+      for (const stage of STAGES) {
+        const sets = weekendData[day]?.[stage] ?? [];
+        for (const artist of sets) {
+          const id = artistKey(weekend, day, stage, artist);
+          const enriched = { ...artist, day, stage };
+          for (const other of selectedArtists) {
+            if (other.id === id) continue;
+            if (artistsOverlap(enriched, other)) {
+              result.add(id);
+              break;
+            }
+          }
+        }
+      }
+    }
+    return result;
+  }, [weekend, selectedArtists]);
+
+  const toggleArtist = useCallback(
+    (id, artist) => {
+      const isAdding = !selectedIds.has(id);
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+
+      if (isAdding && artist?.day) {
+        const conflict = selectedArtists.find((other) =>
+          artistsOverlap(artist, other),
+        );
+        if (conflict) {
+          toastIdRef.current += 1;
+          setToast({
+            a: artist.name,
+            b: conflict.name,
+            id: toastIdRef.current,
+          });
+        }
+      }
+    },
+    [selectedIds, selectedArtists],
+  );
+
+  const clearAll = useCallback(() => setSelectedIds(new Set()), []);
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const dismissToast = useCallback(() => setToast(null), []);
+
   const scheduleEvents = useMemo(
     () => optimizeSchedule(selectedArtists),
     [selectedArtists],
+  );
+
+  const scheduleTips = useMemo(
+    () => generateTips(scheduleEvents),
+    [scheduleEvents],
   );
 
   const buildSchedule = useCallback(() => {
@@ -140,6 +212,7 @@ export default function WeekendPage({ weekend }) {
                 weekend={weekend}
                 day={selectedDay}
                 selectedIds={selectedIds}
+                conflictIds={conflictIds}
                 onToggleArtist={toggleArtist}
                 artists={schedule[weekend]?.[selectedDay]?.[stage] ?? []}
               />
@@ -149,7 +222,7 @@ export default function WeekendPage({ weekend }) {
       </div>
 
       {scheduleBuilt && selectedArtists.length > 0 && (
-        <OptimizedSchedule events={scheduleEvents} />
+        <OptimizedSchedule events={scheduleEvents} tips={scheduleTips} />
       )}
 
       {!drawerOpen && (
@@ -165,6 +238,15 @@ export default function WeekendPage({ weekend }) {
         onClear={clearAll}
         onBuild={buildSchedule}
       />
+
+      {toast && (
+        <ConflictToast
+          key={toast.id}
+          a={toast.a}
+          b={toast.b}
+          onDismiss={dismissToast}
+        />
+      )}
       </section>
     </>
   );

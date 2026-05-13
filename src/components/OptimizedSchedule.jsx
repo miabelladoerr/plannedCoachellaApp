@@ -276,7 +276,7 @@ function groupByDay(events) {
   return days;
 }
 
-export default function OptimizedSchedule({ events }) {
+export default function OptimizedSchedule({ events, tips = [] }) {
   if (!events || events.length === 0) return null;
 
   const setCount = events.filter((e) => e.type === "set").length;
@@ -322,6 +322,29 @@ export default function OptimizedSchedule({ events }) {
           <span className="h-px flex-1 bg-gradient-to-r from-transparent via-dusty-rose to-transparent" />
         </div>
       </header>
+
+      {tips.length > 0 && (
+        <section className="mb-8" aria-label="Pro tips">
+          <h3 className="mb-3 px-1 font-sans text-xs font-bold uppercase tracking-[0.25em] text-terracotta">
+            Pro Tips
+          </h3>
+          <ul className="space-y-2.5">
+            {tips.map((tip) => (
+              <li
+                key={tip.id}
+                className="flex items-start gap-3 rounded-xl border border-gold/40 border-l-4 border-l-gold bg-warm-cream/85 px-4 py-3 shadow-sm"
+              >
+                <span className="mt-0.5 shrink-0 text-gold" aria-hidden="true">
+                  <BulbIcon size={16} />
+                </span>
+                <p className="font-sans text-sm text-deep-purple">
+                  {tip.message}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="space-y-8">
         {days.map(({ day, events: dayEvents }) => (
